@@ -25,7 +25,7 @@ gh issue view <n>                                # tâches, critères d'acceptat
 
 | Couche | Choix |
 |---|---|
-| Back | Java (dernière LTS), Spring Boot 3+, Maven (`./mvnw`), MapStruct, Flyway, PostgreSQL |
+| Back | Java 25 (LTS), Spring Boot 4.1, Maven Wrapper (`./mvnw`), MapStruct, Flyway, PostgreSQL |
 | Sécurité | Keycloak (realm `spendly`), Spring OAuth2 Resource Server (JWT), `@PreAuthorize` |
 | Messaging | Kafka (KRaft) + pattern Transactional Outbox |
 | Stockage | MinIO (S3), bucket `receipts` |
@@ -48,7 +48,9 @@ docs/    cahier des charges, ADR (docs/adr/)
 ```bash
 docker compose -f infra/docker-compose.yml up -d     # postgres, keycloak, mailpit, minio (+ kafka dès J4)
 cd api && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-cd api && ./mvnw verify                              # tests + Spotless/Checkstyle + ArchUnit
+cd api && ./mvnw spring-boot:test-run                # sans BDD locale : PostgreSQL lancé par Testcontainers
+cd api && ./mvnw verify                              # tests (Docker requis : Testcontainers) + Spotless/Checkstyle + ArchUnit
+cd api && ./mvnw spotless:apply                      # reformater le code Java (google-java-format)
 cd api && ./mvnw test -Dtest=ClassName               # un seul test
 cd web && npm start                                  # http://localhost:4200 (proxy vers :8080)
 cd web && npm run lint && npm test && npm run build
@@ -69,6 +71,7 @@ cd web && npm run lint && npm test && npm run build
 
 ## Conventions de code
 
+- Formatage Java imposé par Spotless (google-java-format, indentation 2 espaces) ; règles Checkstyle complémentaires dans `api/config/checkstyle/checkstyle.xml`. Lancer `./mvnw spotless:apply` avant `verify`.
 - Code, noms de classes et commits en **anglais** ; issues, docs et README en **français**.
 - Java moderne : `record` pour DTO/commandes/value objects, `sealed` + pattern matching pour événements et erreurs métier, `Optional` en retour (jamais en paramètre/champ).
 - Angular : composants standalone, `input()`/`output()`, signals/`computed`, `OnPush`, nouveau control flow (`@if`, `@for`), guards et intercepteurs fonctionnels, formulaires réactifs typés.

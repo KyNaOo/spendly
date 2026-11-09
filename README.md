@@ -18,7 +18,7 @@ Spendly remplace le fichier Excel des notes de frais d'une entreprise :
 
 | Couche | Choix |
 |---|---|
-| Back | Java (LTS), Spring Boot 3+, Spring Data JPA, Spring Security, MapStruct, Flyway |
+| Back | Java 25 (LTS), Spring Boot 4.1, Spring Data JPA, Spring Security, MapStruct, Flyway |
 | Données | PostgreSQL, MinIO (S3) |
 | Identité | Keycloak (OAuth2 / OIDC) |
 | Messaging | Kafka (pattern Transactional Outbox) |
@@ -39,6 +39,21 @@ docs/     Cahier des charges et décisions d'architecture (ADR)
 ## Démarrage rapide
 
 _À venir (jalon 0) : `docker compose up` lancera l'ensemble des dépendances._
+
+### API (`api/`)
+
+Prérequis : JDK 25 et Docker (Maven est fourni par le wrapper `./mvnw`).
+
+```bash
+cd api
+./mvnw verify                 # compilation, tests (PostgreSQL via Testcontainers), Spotless, Checkstyle
+./mvnw spotless:apply         # reformate le code (google-java-format)
+./mvnw spring-boot:test-run   # lance l'API avec un PostgreSQL éphémère (Testcontainers)
+./mvnw spring-boot:run        # lance l'API contre la BDD de dev (localhost:5432/spendly, spendly/spendly)
+```
+
+Santé : `GET http://localhost:8080/actuator/health` (public) → `{"status":"UP"}` ; `/actuator/info` exige une authentification.
+Identifiants BDD surchargeables via `SPENDLY_DB_URL`, `SPENDLY_DB_USERNAME`, `SPENDLY_DB_PASSWORD`.
 
 ## Documentation
 

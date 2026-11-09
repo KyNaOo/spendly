@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: spendly-api
+  datasource:
+    # Local development defaults; overridable through environment variables.
+    url: ${SPENDLY_DB_URL:jdbc:postgresql://localhost:5432/spendly}
+    username: ${SPENDLY_DB_USERNAME:spendly}
+    password: ${SPENDLY_DB_PASSWORD:spendly}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # The schema is owned by Flyway migrations only.
+      ddl-auto: validate
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: Spendly expense reports API
