@@ -2,7 +2,8 @@
 
 Application de **gestion des notes de frais avec circuit de validation** (employé → manager → comptabilité), projet portfolio orienté ESN / banque / assurance.
 
-- **Cahier des charges complet** : `02-notes-de-frais-spring-angular.md` (à déplacer dans `docs/` via l'issue #1 — mettre ce chemin à jour ensuite). C'est la source de vérité : le relire avant toute décision d'architecture.
+- **Cahier des charges complet** : `docs/02-notes-de-frais-spring-angular.md`. C'est la source de vérité : le relire avant toute décision d'architecture.
+- **Conventions de contribution** (branches, commits, langues, PR) : `CONTRIBUTING.md`. **ADR** : `docs/adr/` (index dans `docs/adr/README.md`, ajouter une ligne à chaque nouvel ADR).
 - **Dépôt GitHub** : `KyNaOo/spendly` (public). Tout le travail est découpé en issues.
 
 ## Démarrer une session

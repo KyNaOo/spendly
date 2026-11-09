@@ -1,0 +1,49 @@
+# ---- OS / IDE ----
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*~
+
+# ---- Environnement / secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- Java / Maven (api/) ----
+api/target/
+!api/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+.sts4-cache/
+HELP.md
+
+# ---- Node / Angular (web/) ----
+node_modules/
+web/dist/
+web/.angular/
+web/coverage/
+web/test-results/
+web/playwright-report/
+web/blob-report/
+web/playwright/.cache/
+web/playwright/.auth/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Infra ----
+infra/helm/spendly/charts/*.tgz
+*.kubeconfig
