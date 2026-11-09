@@ -18,6 +18,7 @@ gh issue view <n>                                # tâches, critères d'acceptat
 - Avant de commencer une issue, vérifier que ses dépendances sont fermées.
 - **Tout se fait directement sur `main`** (projet solo, choix assumé) : pas de branche, pas de PR. Le commit qui termine une issue contient `Closes #<n>`. Lancer les vérifications locales avant de pousser.
 - Cocher les cases de la checklist de l'issue au fil de l'avancement.
+- **Pipeline automatisé** : `/ticket <n>` ou `/ticket next` (skill `.claude/skills/ticket/`) délègue à l'agent `implementer`, fait vérifier par l'agent `reviewer` (lecture seule, 2 cycles de correction max), puis commit + push sur `main`, coche l'issue et la commente. Enchaîner avec `/loop /ticket next`. Le pipeline s'arrête sur toute décision structurante pour la poser à l'utilisateur. `python3 .claude/skills/ticket/next_issue.py` donne la prochaine issue prête.
 - Labels : `api`, `web`, `infra`, `ci-cd`, `domain`, `security`, `persistence`, `messaging`, `testing`, `observability`, `docs`.
 
 ## Stack
