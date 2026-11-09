@@ -3,7 +3,7 @@
 Application de **gestion des notes de frais avec circuit de validation** (employé → manager → comptabilité), projet portfolio orienté ESN / banque / assurance.
 
 - **Cahier des charges complet** : `docs/02-notes-de-frais-spring-angular.md`. C'est la source de vérité : le relire avant toute décision d'architecture.
-- **Conventions de contribution** (branches, commits, langues, PR) : `CONTRIBUTING.md`. **ADR** : `docs/adr/` (index dans `docs/adr/README.md`, ajouter une ligne à chaque nouvel ADR).
+- **Conventions de contribution** (commits, langues) : `CONTRIBUTING.md`. **ADR** : `docs/adr/` (index dans `docs/adr/README.md`, ajouter une ligne à chaque nouvel ADR).
 - **Dépôt GitHub** : `KyNaOo/spendly` (public). Tout le travail est découpé en issues.
 
 ## Démarrer une session
@@ -16,7 +16,7 @@ gh issue view <n>                                # tâches, critères d'acceptat
 
 - Travailler **jalon par jalon** (milestones « Jalon 0 » → « Jalon 6 »), dans l'ordre des numéros d'issue : les dépendances pointent toujours vers des issues de numéro inférieur (section « Dépendances » de chaque issue).
 - Avant de commencer une issue, vérifier que ses dépendances sont fermées.
-- Une issue = une branche `feat/<n>-slug` (ou `fix/`, `chore/`, `docs/`) = une PR qui la ferme (`Closes #<n>`).
+- **Tout se fait directement sur `main`** (projet solo, choix assumé) : pas de branche, pas de PR. Le commit qui termine une issue contient `Closes #<n>`. Lancer les vérifications locales avant de pousser.
 - Cocher les cases de la checklist de l'issue au fil de l'avancement.
 - Labels : `api`, `web`, `infra`, `ci-cd`, `domain`, `security`, `persistence`, `messaging`, `testing`, `observability`, `docs`.
 

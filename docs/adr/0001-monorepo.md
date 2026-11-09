@@ -13,10 +13,10 @@ Un seul dépôt `spendly` avec les dossiers `api/`, `web/`, `infra/`, `docs/` et
 
 ## Alternatives envisagées
 
-- **Deux dépôts `spendly-api` / `spendly-web`** : versionnement indépendant, mais les changements transverses (contrat d'API + écran) se font en deux PR et la présentation est plus dispersée.
+- **Deux dépôts `spendly-api` / `spendly-web`** : versionnement indépendant, mais les changements transverses (contrat d'API + écran) se font en deux commits sur deux dépôts et la présentation est plus dispersée.
 
 ## Conséquences
 
-- Une PR peut modifier l'API et le front de façon atomique.
+- Un commit peut modifier l'API et le front de façon atomique.
 - Un seul README, un seul `docker compose up` pour la démo.
 - La CI doit être découpée par chemin pour rester rapide.

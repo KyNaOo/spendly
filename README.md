@@ -33,7 +33,7 @@ api/      API Spring Boot (architecture hexagonale)
 web/      Front Angular
 infra/    Docker Compose, realm Keycloak, chart Helm
 docs/     Cahier des charges et décisions d'architecture (ADR)
-.github/  CI/CD, templates d'issues et de PR
+.github/  CI/CD, templates d'issues
 ```
 
 ## Démarrage rapide

@@ -2,13 +2,15 @@
 
 ## Workflow
 
-1. Choisir une issue du milestone en cours dont les dépendances (« Bloqué par #n ») sont fermées.
-2. Créer une branche depuis `main` : `<type>/<n°issue>-<slug>`, par exemple `feat/12-expense-report-aggregate`.
-3. Une issue = une branche = une pull request, qui contient `Closes #<n>`.
-4. Cocher les tâches de l'issue au fil de l'avancement.
-5. La CI doit être verte avant de merger (squash merge recommandé).
+Projet mené en solo : **tout se fait directement sur `main`**, sans branche ni pull request.
 
-## Types de branches et de commits
+1. Choisir une issue du milestone en cours dont les dépendances (« Bloqué par #n ») sont fermées.
+2. Lancer les vérifications locales avant de pousser (`./mvnw verify`, `npm run lint && npm test`).
+3. Le commit qui termine une issue contient `Closes #<n>` : l'issue se ferme automatiquement au push.
+4. Cocher les tâches de l'issue au fil de l'avancement.
+5. Si la CI casse sur `main`, la réparer en priorité.
+
+## Commits
 
 Les messages de commit suivent [Conventional Commits](https://www.conventionalcommits.org/) et sont rédigés **en anglais** :
 
@@ -38,8 +40,8 @@ chore(infra): import keycloak realm on startup
 
 ## Langues
 
-- **Anglais** : code, noms de classes/variables, commits, noms de branches.
-- **Français** : issues, pull requests, README, documentation, ADR.
+- **Anglais** : code, noms de classes/variables, commits.
+- **Français** : issues, README, documentation, ADR.
 
 ## Décisions d'architecture
 
