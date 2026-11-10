@@ -47,7 +47,7 @@ docs/    cahier des charges, ADR (docs/adr/)
 
 ```bash
 docker compose -f infra/docker-compose.yml up -d     # postgres :5432, keycloak :8180, mailpit :8025/:1025, minio :9000/:9001 + job minio-init (bucket receipts) (+ kafka dès J4) ; surcharges dans infra/.env ; pas de --wait (le job one-shot le fait échouer)
-cd api && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+cd api && ./mvnw spring-boot:run                     # profil dev par défaut (local uniquement)
 cd api && ./mvnw spring-boot:test-run                # sans BDD locale : PostgreSQL lancé par Testcontainers
 cd api && ./mvnw verify                              # tests (Docker requis : Testcontainers) + Spotless/Checkstyle + ArchUnit
 cd api && ./mvnw spotless:apply                      # reformater le code Java (google-java-format)
@@ -68,6 +68,7 @@ cd web && npm run lint && npm test && npm run build
 - **Événements** : écrits dans la table outbox dans la même transaction que l'agrégat, publiés ensuite ; consumers idempotents (clé `eventId`) + dead-letter topic.
 - **Transactions** : `@Transactional` sur les services applicatifs (attention à l'auto-invocation).
 - **Schéma BDD** : uniquement via migrations Flyway ; `ddl-auto=validate`.
+- **Configuration** : profils `dev` / `test` / `prod` (`application-<profil>.yml`) ; réglages applicatifs typés dans `config/SpendlyProperties` (record `@ConfigurationProperties(prefix = "spendly")` + `@Validated`), pas de `@Value` dispersés ; en `prod`, aucune valeur sensible en dur (`${VAR}` sans défaut). Tests Spring complets : `@ActiveProfiles("test")`.
 
 ## Conventions de code
 

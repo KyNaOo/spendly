@@ -1,0 +1,4 @@
+# Automated tests: activated with @ActiveProfiles("test").
+# The datasource is not configured here: Testcontainers (@ServiceConnection) provides it.
+spendly:
+  frontend-url: http://localhost:4200

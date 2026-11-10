@@ -1,0 +1,16 @@
+# Deployed environments: no sensitive value is hard-coded. Every ${VAR} below has no default,
+# so a missing environment variable makes the startup fail with "Could not resolve placeholder 'VAR'".
+spring:
+  datasource:
+    url: ${SPENDLY_DB_URL}
+    username: ${SPENDLY_DB_USERNAME}
+    password: ${SPENDLY_DB_PASSWORD}
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+spendly:
+  base-currency: ${SPENDLY_BASE_CURRENCY:EUR}
+  frontend-url: ${SPENDLY_FRONTEND_URL}

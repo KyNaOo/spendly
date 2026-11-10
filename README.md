@@ -74,11 +74,30 @@ cd api
 ./mvnw verify                 # compilation, tests (PostgreSQL via Testcontainers), Spotless, Checkstyle
 ./mvnw spotless:apply         # reformate le code (google-java-format)
 ./mvnw spring-boot:test-run   # lance l'API avec un PostgreSQL éphémère (Testcontainers)
-./mvnw spring-boot:run        # lance l'API contre la BDD de dev (localhost:5432/spendly, spendly/spendly)
+./mvnw spring-boot:run        # lance l'API en profil dev contre le Docker Compose (localhost:5432/spendly)
 ```
 
 Santé : `GET http://localhost:8080/actuator/health` (public) → `{"status":"UP"}` ; `/actuator/info` exige une authentification.
-Identifiants BDD surchargeables via `SPENDLY_DB_URL`, `SPENDLY_DB_USERNAME`, `SPENDLY_DB_PASSWORD`.
+
+#### Profils et configuration
+
+| Profil | Usage | Activation |
+|---|---|---|
+| `dev` | Développement local contre `infra/docker-compose.yml` (valeurs par défaut de `infra/.env.example`) | Automatique avec `./mvnw spring-boot:run` / `spring-boot:test-run` |
+| `test` | Tests automatisés ; la BDD est fournie par Testcontainers | `@ActiveProfiles("test")` |
+| `prod` | Environnements déployés : **aucune valeur sensible en dur**, tout vient de variables d'environnement | `SPRING_PROFILES_ACTIVE=prod` |
+
+- Le profil `dev` n'est actif par défaut **qu'en local**, via la propriété Maven `spring-boot.run.profiles` du `pom.xml` (surcharge : `./mvnw spring-boot:run -Dspring-boot.run.profiles=…`). Le jar packagé n'a aucun profil par défaut : lancé sans profil, il refuse de démarrer.
+- Les réglages propres à Spendly sont typés dans `SpendlyProperties` (clés `spendly.*`), validés au démarrage : une propriété obligatoire manquante arrête l'application avec un message nommant la propriété.
+- En `prod`, toute variable d'environnement manquante est signalée d'un coup au démarrage (« Missing configuration… »), avant la création du moindre bean.
+
+| Variable | `dev` (défaut) | `prod` |
+|---|---|---|
+| `SPENDLY_DB_URL` | `jdbc:postgresql://localhost:5432/spendly` | obligatoire |
+| `SPENDLY_DB_USERNAME` | `spendly` | obligatoire |
+| `SPENDLY_DB_PASSWORD` | `spendly` | obligatoire |
+| `SPENDLY_FRONTEND_URL` | `http://localhost:4200` | obligatoire |
+| `SPENDLY_BASE_CURRENCY` | `EUR` | optionnelle (`EUR`) |
 
 ## Documentation
 

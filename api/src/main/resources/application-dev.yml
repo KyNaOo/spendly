@@ -1,0 +1,19 @@
+# Local development: targets the services of infra/docker-compose.yml.
+# Defaults match infra/.env.example and are overridable through environment variables.
+spring:
+  datasource:
+    url: ${SPENDLY_DB_URL:jdbc:postgresql://localhost:5432/spendly}
+    username: ${SPENDLY_DB_USERNAME:spendly}
+    password: ${SPENDLY_DB_PASSWORD:spendly}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.spendly: DEBUG
+
+spendly:
+  frontend-url: ${SPENDLY_FRONTEND_URL:http://localhost:4200}

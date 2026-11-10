@@ -1,11 +1,11 @@
+# Settings shared by every profile. Profile-specific files (application-<profile>.yml) override them:
+#   dev  -> local development against infra/docker-compose.yml (enabled by default by ./mvnw spring-boot:run)
+#   test -> automated tests (@ActiveProfiles("test"), PostgreSQL provided by Testcontainers)
+#   prod -> deployed environments, every sensitive value comes from environment variables
+# Without any profile the application refuses to start (no datasource, no spendly.frontend-url).
 spring:
   application:
     name: spendly-api
-  datasource:
-    # Local development defaults; overridable through environment variables.
-    url: ${SPENDLY_DB_URL:jdbc:postgresql://localhost:5432/spendly}
-    username: ${SPENDLY_DB_USERNAME:spendly}
-    password: ${SPENDLY_DB_PASSWORD:spendly}
   jpa:
     open-in-view: false
     hibernate:
@@ -28,3 +28,9 @@ info:
   app:
     name: ${spring.application.name}
     description: Spendly expense reports API
+
+# Typed application settings, bound to com.spendly.config.SpendlyProperties (validated at startup).
+spendly:
+  # Currency in which reports are reimbursed and exported (ISO 4217 code).
+  base-currency: EUR
+  # frontend-url is required and defined per profile.

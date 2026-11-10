@@ -15,6 +15,9 @@
 	<description>Spendly expense reports API</description>
 	<properties>
 		<java.version>25</java.version>
+		<!-- `./mvnw spring-boot:run` / `spring-boot:test-run` start with the dev profile (local only:
+		     the packaged jar has no default profile). Override with -Dspring-boot.run.profiles=... -->
+		<spring-boot.run.profiles>dev</spring-boot.run.profiles>
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<spotless.version>3.11.0</spotless.version>
 		<google-java-format.version>2.0.0</google-java-format.version>
