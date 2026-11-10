@@ -1,0 +1,112 @@
+# Local development dependencies for Spendly.
+# Usage: docker compose -f infra/docker-compose.yml up -d
+# Every value below has a dev-only default; override it in infra/.env (see infra/.env.example).
+name: spendly
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-spendly}
+      POSTGRES_USER: ${POSTGRES_USER:-spendly}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spendly}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # PostgreSQL 18+ images store data under /var/lib/postgresql (versioned sub-directory).
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    restart: unless-stopped
+    # Dev mode (embedded H2, plain HTTP). Every *.json file of /opt/keycloak/data/import is
+    # imported at startup; a realm that already exists is left untouched.
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "${KEYCLOAK_PORT:-8180}:8080"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    healthcheck:
+      # The image ships neither curl nor wget: probe the management port (9000) with bash only.
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"status": *"UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  mailpit:
+    image: axllent/mailpit:v1.33.1
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # MinIO official images are no longer publicly pullable: Chainguard rebuilds are used instead,
+  # pinned by digest for reproducibility (see docs/adr/0002-minio-image-source.md).
+  minio:
+    # chainguard/minio:latest, digest retrieved on 2026-11-10 (MinIO RELEASE.2026-11-09T00-10-40Z)
+    image: chainguard/minio@sha256:fb893e36fc369d41e92f678b17ec27378fa5bf0576aeef7ac15460c13629ab5a
+    restart: unless-stopped
+    command: ["server", "/data", "--address", ":9000", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-spendly}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-spendly-secret}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      # No curl/wget/grep in the image: probe the readiness endpoint with bash builtins only
+      # and check the HTTP status line.
+      test:
+        - CMD
+        - bash
+        - -c
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /minio/health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          read -r status <&3 && [[ $$status == *' 200 '* ]]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  # One-shot job: creates the "receipts" bucket (idempotent thanks to --ignore-existing), then exits.
+  minio-init:
+    # chainguard/minio-client:latest, digest retrieved on 2026-11-10
+    image: chainguard/minio-client@sha256:dbdb3b237441a5985c65af5a4bceed052fd01f872dae5d22d8ca5460d09c91ab
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      # The image has no shell: the "local" alias is declared through MC_HOST_<alias>.
+      MC_HOST_local: http://${MINIO_ROOT_USER:-spendly}:${MINIO_ROOT_PASSWORD:-spendly-secret}@minio:9000
+    command: ["mb", "--ignore-existing", "local/${MINIO_BUCKET:-receipts}"]
+    restart: "no"
+
+volumes:
+  postgres-data:
+  minio-data:

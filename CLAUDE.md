@@ -46,7 +46,7 @@ docs/    cahier des charges, ADR (docs/adr/)
 ## Commandes (une fois le socle en place — mettre à jour si elles changent)
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d     # postgres, keycloak, mailpit, minio (+ kafka dès J4)
+docker compose -f infra/docker-compose.yml up -d     # postgres :5432, keycloak :8180, mailpit :8025/:1025, minio :9000/:9001 + job minio-init (bucket receipts) (+ kafka dès J4) ; surcharges dans infra/.env ; pas de --wait (le job one-shot le fait échouer)
 cd api && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 cd api && ./mvnw spring-boot:test-run                # sans BDD locale : PostgreSQL lancé par Testcontainers
 cd api && ./mvnw verify                              # tests (Docker requis : Testcontainers) + Spotless/Checkstyle + ArchUnit

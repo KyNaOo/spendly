@@ -5,6 +5,7 @@ Chaque décision structurante est consignée dans un fichier `NNNN-titre-court.m
 | N° | Titre | Statut |
 |---|---|---|
 | [0001](0001-monorepo.md) | Monorepo api / web / infra | Accepté |
+| [0002](0002-minio-image-source.md) | Source des images MinIO (Chainguard, épinglées par digest) | Accepté |
 
 ## Modèle
 

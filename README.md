@@ -38,7 +38,32 @@ docs/     Cahier des charges et décisions d'architecture (ADR)
 
 ## Démarrage rapide
 
-_À venir (jalon 0) : `docker compose up` lancera l'ensemble des dépendances._
+### Dépendances locales (`infra/`)
+
+Prérequis : Docker avec Compose v2.
+
+```bash
+docker compose -f infra/docker-compose.yml up -d      # démarre les services (premier lancement : ~1 min)
+docker compose -f infra/docker-compose.yml ps -a      # état : services « healthy », minio-init « Exited (0) »
+docker compose -f infra/docker-compose.yml down       # arrêt (ajouter -v pour effacer BDD et fichiers)
+```
+
+| Service | URL / port | Identifiants (dev) |
+|---|---|---|
+| PostgreSQL 18 | `localhost:5432`, base `spendly` | `spendly` / `spendly` |
+| Keycloak — console d'administration | http://localhost:8180/admin | `admin` / `admin` |
+| Keycloak — realm `spendly` (issuer) | http://localhost:8180/realms/spendly | — |
+| Mailpit — interface web | http://localhost:8025 | — |
+| Mailpit — SMTP | `localhost:1025` | — |
+| MinIO — API S3 | http://localhost:9000, bucket `receipts` | `spendly` / `spendly-secret` |
+| MinIO — navigateur d'objets | http://localhost:9001 | `spendly` / `spendly-secret` |
+
+- Ports et identifiants surchargeables : copier `infra/.env.example` en `infra/.env` (ignoré par Git) et l'adapter. Les valeurs par défaut sont **réservées au développement**.
+- Keycloak tourne en mode `start-dev` et importe au démarrage (`--import-realm`) les fichiers JSON de `infra/keycloak/`. Un realm déjà présent n'est pas réimporté : `docker compose … up -d --force-recreate keycloak` pour repartir du fichier.
+- MinIO : le job ponctuel `minio-init` crée le bucket `receipts` (idempotent) dès que MinIO est sain, puis s'arrête avec le code 0. Pour cette raison, `up -d --wait` renvoie un code d'erreur alors que tout va bien : vérifier plutôt avec `ps -a`.
+- L'édition communautaire de MinIO n'a plus de console d'administration complète : l'interface du port 9001 est un simple navigateur d'objets (buckets, fichiers). L'administration passe par `mc` (`docker compose -f infra/docker-compose.yml exec minio mc …`).
+- Les images MinIO officielles n'étant plus téléchargeables, le compose utilise les images Chainguard épinglées par digest ([ADR 0002](docs/adr/0002-minio-image-source.md)).
+- Les données vivent dans les volumes nommés `spendly_postgres-data` et `spendly_minio-data`.
 
 ### API (`api/`)
 
