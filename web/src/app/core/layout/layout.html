@@ -1,0 +1,46 @@
+<mat-sidenav-container class="layout">
+  <mat-sidenav
+    #sidenav
+    class="layout__sidenav"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset()"
+    [attr.role]="isHandset() ? 'dialog' : 'navigation'"
+  >
+    <mat-nav-list aria-label="Navigation principale">
+      @for (item of navItems; track item.path) {
+        <a
+          mat-list-item
+          [routerLink]="item.path"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+          [activated]="rla.isActive"
+          (click)="isHandset() && sidenav.close()"
+        >
+          <mat-icon matListItemIcon aria-hidden="true">{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="layout__content">
+    <mat-toolbar class="layout__toolbar">
+      @if (isHandset()) {
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Ouvrir le menu"
+          (click)="sidenav.toggle()"
+        >
+          <mat-icon aria-hidden="true">menu</mat-icon>
+        </button>
+      }
+      <a class="layout__brand" routerLink="/">Spendly</a>
+    </mat-toolbar>
+
+    <main class="layout__main">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

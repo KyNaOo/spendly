@@ -30,14 +30,14 @@ gh issue view <n>                                # tâches, critères d'acceptat
 | Messaging | Kafka (KRaft) + pattern Transactional Outbox |
 | Stockage | MinIO (S3), bucket `receipts` |
 | Front | Angular (dernière stable), standalone, signals, Angular Material, NgRx SignalStore, `angular-auth-oidc-client` |
-| Tests | JUnit 5, AssertJ, Mockito, Testcontainers, ArchUnit, RestAssured · Jest/Vitest + Testing Library · Playwright |
+| Tests | JUnit 5, AssertJ, Mockito, Testcontainers, ArchUnit, RestAssured · Vitest (runner `@angular/build:unit-test`) + Angular Testing Library · Playwright |
 | Ops | Docker Compose, k3d + Helm, GitHub Actions, SonarCloud |
 
 ## Structure cible (monorepo)
 
 ```
 api/     Spring Boot — com.spendly.{domain, application/port/{in,out}, application/service, adapter/{in/web, out/persistence, out/storage, out/messaging, out/pdf}, config}
-web/     Angular — src/app/{core, shared, features/{reports, approvals, accounting, admin}}
+web/     Angular — src/app/{core, shared, features/{home, reports, approvals, accounting, admin}} ; URL API via le jeton API_BASE_URL (src/environments)
 infra/   docker-compose.yml, keycloak/realm-export.json, helm/spendly/
 docs/    cahier des charges, ADR (docs/adr/)
 .github/ workflows CI/CD
@@ -52,8 +52,9 @@ cd api && ./mvnw spring-boot:test-run                # sans BDD locale : Postgre
 cd api && ./mvnw verify                              # tests (Docker requis : Testcontainers) + Spotless/Checkstyle + ArchUnit
 cd api && ./mvnw spotless:apply                      # reformater le code Java (google-java-format)
 cd api && ./mvnw test -Dtest=ClassName               # un seul test
-cd web && npm start                                  # http://localhost:4200 (proxy vers :8080)
-cd web && npm run lint && npm test && npm run build
+cd web && npm start                                  # http://localhost:4200 (proxy /api et /actuator vers :8080, web/proxy.conf.json)
+cd web && npm run lint && npm test && npm run build   # lint = ESLint + prettier --check ; test = Vitest une passe (test:watch en continu)
+cd web && npm run format                             # reformater le front (Prettier)
 ```
 
 ## Règles d'architecture (non négociables)

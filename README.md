@@ -99,6 +99,23 @@ Santé : `GET http://localhost:8080/actuator/health` (public) → `{"status":"UP
 | `SPENDLY_FRONTEND_URL` | `http://localhost:4200` | obligatoire |
 | `SPENDLY_BASE_CURRENCY` | `EUR` | optionnelle (`EUR`) |
 
+### Front (`web/`)
+
+Prérequis : Node.js `^22.22`, `^24.15` ou `>=26` (contrainte d'Angular 22).
+
+```bash
+cd web
+npm ci                # installation des dépendances
+npm start             # http://localhost:4200 ; /api et /actuator sont relayés vers l'API (localhost:8080)
+npm test              # tests unitaires (Vitest + Angular Testing Library) ; npm run test:watch en continu
+npm run lint          # ESLint (angular-eslint) + vérification du formatage Prettier ; npm run format pour corriger
+npm run build         # build de production (dist/web/)
+```
+
+- Angular 22 (standalone, signals, zoneless), Angular Material 3 (thème `azure`/`blue` dans `src/styles.scss`).
+- Arborescence `core/` (layout, configuration), `shared/` (composants réutilisables), `features/{reports,approvals,accounting,admin}` chargées à la demande (*lazy loading*). Détails dans [`web/README.md`](web/README.md).
+- L'URL de l'API vient de `src/environments/` (`apiUrl: '/api'`) : en développement, le proxy `web/proxy.conf.json` évite tout problème de CORS.
+
 ## Documentation
 
 - [Cahier des charges](docs/02-notes-de-frais-spring-angular.md)
