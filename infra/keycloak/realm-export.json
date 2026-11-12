@@ -1,4 +1,146 @@
 {
   "realm": "spendly",
-  "enabled": true
+  "displayName": "Spendly",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["fr", "en"],
+  "defaultLocale": "fr",
+  "roles": {
+    "realm": [
+      {
+        "name": "EMPLOYEE",
+        "description": "Declares expenses and submits expense reports"
+      },
+      {
+        "name": "MANAGER",
+        "description": "Approves or rejects the expense reports of their team"
+      },
+      {
+        "name": "ACCOUNTANT",
+        "description": "Reimburses approved expense reports and exports accounting entries"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Manages expense policies (ceilings, receipt thresholds)"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "spendly-api",
+      "name": "Spendly API",
+      "description": "Resource server: only used as the audience of the access tokens (no login flow).",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": false
+    },
+    {
+      "clientId": "spendly-web",
+      "name": "Spendly Web",
+      "description": "Angular SPA: public client, Authorization Code flow with PKCE (S256).",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "rootUrl": "http://localhost:4200",
+      "baseUrl": "/",
+      "redirectUris": ["http://localhost:4200/*"],
+      "webOrigins": ["http://localhost:4200"],
+      "frontchannelLogout": true,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4200/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "spendly-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "spendly-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "username": "alice",
+      "email": "alice.martin@spendly.example",
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Martin",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "alice", "temporary": false }],
+      "realmRoles": ["EMPLOYEE"]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "username": "bob",
+      "email": "bob.durand@spendly.example",
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Durand",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "bob", "temporary": false }],
+      "realmRoles": ["EMPLOYEE"]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "username": "marc",
+      "email": "marc.lefevre@spendly.example",
+      "emailVerified": true,
+      "firstName": "Marc",
+      "lastName": "Lefèvre",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "marc", "temporary": false }],
+      "realmRoles": ["EMPLOYEE", "MANAGER"]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000004",
+      "username": "claire",
+      "email": "claire.dubois@spendly.example",
+      "emailVerified": true,
+      "firstName": "Claire",
+      "lastName": "Dubois",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "claire", "temporary": false }],
+      "realmRoles": ["EMPLOYEE", "ACCOUNTANT"]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000005",
+      "username": "sophie",
+      "email": "sophie.bernard@spendly.example",
+      "emailVerified": true,
+      "firstName": "Sophie",
+      "lastName": "Bernard",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "sophie", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    }
+  ]
 }

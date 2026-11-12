@@ -68,6 +68,31 @@ docker compose -f infra/docker-compose.yml down       # arrêt (ajouter -v pour 
 - Les images MinIO officielles n'étant plus téléchargeables, le compose utilise les images Chainguard épinglées par digest ([ADR 0002](docs/adr/0002-minio-image-source.md)).
 - Les données vivent dans les volumes nommés `spendly_postgres-data` et `spendly_minio-data`.
 
+### Keycloak : realm `spendly` et comptes de démo
+
+Le realm est décrit dans [`infra/keycloak/realm-export.json`](infra/keycloak/realm-export.json) (fichier maintenu à la main, volontairement concis) et importé automatiquement au démarrage de Keycloak.
+
+| Élément | Configuration |
+|---|---|
+| Rôles du realm | `EMPLOYEE`, `MANAGER`, `ACCOUNTANT`, `ADMIN` (claim `realm_access.roles` du jeton d'accès) |
+| Client `spendly-web` | Client **public** (SPA Angular, pas de secret) : Authorization Code + **PKCE S256 obligatoire** ; redirect URIs `http://localhost:4200/*` ; origine CORS `http://localhost:4200` ; *password grant* désactivé |
+| Client `spendly-api` | *Bearer-only* : ne sert qu'à nommer l'**audience** ; un mapper du client `spendly-web` ajoute `spendly-api` au claim `aud` des jetons d'accès |
+
+Comptes de démo (mot de passe = identifiant, **développement uniquement**) :
+
+| Identifiant | Nom | Rôles | `sub` (fixe) | Département / manager (en base, #15) |
+|---|---|---|---|---|
+| `alice` | Alice Martin | `EMPLOYEE` | `00000000-0000-4000-8000-000000000001` | Ventes, manager `marc` |
+| `bob` | Bob Durand | `EMPLOYEE` | `00000000-0000-4000-8000-000000000002` | Ventes, manager `marc` |
+| `marc` | Marc Lefèvre | `EMPLOYEE`, `MANAGER` | `00000000-0000-4000-8000-000000000003` | Ventes |
+| `claire` | Claire Dubois | `EMPLOYEE`, `ACCOUNTANT` | `00000000-0000-4000-8000-000000000004` | Finance |
+| `sophie` | Sophie Bernard | `ADMIN` | `00000000-0000-4000-8000-000000000005` | Direction des systèmes d'information |
+
+- Le manager et le comptable ont aussi le rôle `EMPLOYEE` : ils déclarent leurs propres notes de frais.
+- Keycloak ne porte que l'identité et les rôles. Le **département et la relation manager vivent en base** (table `employee`, clé = `sub` Keycloak) ; les `sub` fixes permettent aux données de démo de concorder avec le realm ([ADR 0003](docs/adr/0003-identity-and-manager-relationship.md)).
+- Vérification : `infra/scripts/check-keycloak-realm.sh` (requiert `curl`, `jq`, `openssl`) joue le vrai flux Authorization Code + PKCE pour chaque compte et contrôle le `sub`, les rôles et l'audience du jeton, ainsi que le refus d'une requête sans PKCE et du *password grant*. Variable `KEYCLOAK_URL` si le port n'est pas 8180.
+- Après modification de `realm-export.json` : `docker compose -f infra/docker-compose.yml up -d --force-recreate keycloak` (Keycloak n'a pas de volume : recréer le conteneur repart d'une base vierge et réimporte le fichier).
+
 ### API (`api/`)
 
 Prérequis : JDK 25 et Docker (Maven est fourni par le wrapper `./mvnw`).

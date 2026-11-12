@@ -47,6 +47,7 @@ docs/    cahier des charges, ADR (docs/adr/)
 
 ```bash
 docker compose -f infra/docker-compose.yml up -d     # postgres :5432, keycloak :8180, mailpit :8025/:1025, minio :9000/:9001 + job minio-init (bucket receipts) (+ kafka dès J4) ; surcharges dans infra/.env ; pas de --wait (le job one-shot le fait échouer)
+infra/scripts/check-keycloak-realm.sh                # realm spendly : jeton (Code + PKCE) de chaque compte de démo, sub/rôles/audience
 cd api && ./mvnw spring-boot:run                     # profil dev par défaut (local uniquement)
 cd api && ./mvnw spring-boot:test-run                # sans BDD locale : PostgreSQL lancé par Testcontainers
 cd api && ./mvnw verify                              # tests (Docker requis : Testcontainers) + Spotless/Checkstyle + ArchUnit
@@ -65,6 +66,7 @@ gh run list --limit 5 && gh run watch                # CI GitHub Actions : .gith
 - **Machine à états** dans l'agrégat `ExpenseReport` :
   `DRAFT -submit-> SUBMITTED -approve-> APPROVED -pay-> REIMBURSED` ; `SUBMITTED -reject-> DRAFT` (motif obligatoire) ; `DRAFT|SUBMITTED -cancel-> CANCELLED`.
 - **Règles métier** : soumission impossible sans ligne ni justificatif au-dessus du seuil ; ligne hors plafond **signalée, pas bloquée** ; pas d'auto-validation ; seul **le manager de l'auteur** valide.
+- **Identité** : Keycloak ne porte que l'identité et les rôles realm (`realm_access.roles`, audience `spendly-api`) ; `managerId` et `department` vivent en base (table `employee`, clé = `sub`) — ADR 0003. Les comptes de démo ont des `sub` fixes (`00000000-0000-4000-8000-00000000000N`), à garder cohérents avec les données de démo.
 - **Concurrence** : verrou optimiste `@Version` → HTTP 409.
 - **Erreurs API** : `ProblemDetail` (RFC 7807) via `@RestControllerAdvice`, erreurs de validation détaillées par champ.
 - **Événements** : écrits dans la table outbox dans la même transaction que l'agrégat, publiés ensuite ; consumers idempotents (clé `eventId`) + dead-letter topic.
