@@ -55,6 +55,7 @@ cd api && ./mvnw test -Dtest=ClassName               # un seul test
 cd web && npm start                                  # http://localhost:4200 (proxy /api et /actuator vers :8080, web/proxy.conf.json)
 cd web && npm run lint && npm test && npm run build   # lint = ESLint + prettier --check ; test = Vitest une passe (test:watch en continu)
 cd web && npm run format                             # reformater le front (Prettier)
+gh run list --limit 5 && gh run watch                # CI GitHub Actions : .github/workflows/{api,web}.yml, push sur main filtré par paths
 ```
 
 ## Règles d'architecture (non négociables)

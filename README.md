@@ -1,5 +1,8 @@
 # Spendly
 
+[![api](https://github.com/KyNaOo/spendly/actions/workflows/api.yml/badge.svg?branch=main)](https://github.com/KyNaOo/spendly/actions/workflows/api.yml)
+[![web](https://github.com/KyNaOo/spendly/actions/workflows/web.yml/badge.svg?branch=main)](https://github.com/KyNaOo/spendly/actions/workflows/web.yml)
+
 > Gestion des notes de frais avec circuit de validation — Java / Spring Boot · Angular · Keycloak · Kafka · Kubernetes
 
 🚧 **Projet en cours de construction** — voir l'avancement dans les [milestones](https://github.com/KyNaOo/spendly/milestones).
@@ -115,6 +118,19 @@ npm run build         # build de production (dist/web/)
 - Angular 22 (standalone, signals, zoneless), Angular Material 3 (thème `azure`/`blue` dans `src/styles.scss`).
 - Arborescence `core/` (layout, configuration), `shared/` (composants réutilisables), `features/{reports,approvals,accounting,admin}` chargées à la demande (*lazy loading*). Détails dans [`web/README.md`](web/README.md).
 - L'URL de l'API vient de `src/environments/` (`apiUrl: '/api'`) : en développement, le proxy `web/proxy.conf.json` évite tout problème de CORS.
+
+## Intégration continue
+
+GitHub Actions (`.github/workflows/`), déclenché à chaque push sur `main` (pas de PR : projet solo) ou manuellement (`workflow_dispatch`) :
+
+| Workflow | Déclenché si changement dans | Étapes |
+|---|---|---|
+| [`api`](.github/workflows/api.yml) | `api/**`, le workflow lui-même | JDK 25 Temurin, cache Maven, `./mvnw verify` (tests Testcontainers + ArchUnit, Spotless, Checkstyle) ; rapports de tests publiés en artefact en cas d'échec |
+| [`web`](.github/workflows/web.yml) | `web/**`, le workflow lui-même | Node.js 26, cache npm, `npm ci`, `npm run lint`, `npm test` (Vitest/jsdom, sans navigateur), `npm run build` |
+
+- Les filtres `paths` évitent de relancer le build Java pour un changement du front (et inversement) ; un push ne touchant que `docs/` ne lance rien.
+- Un nouveau push annule le run encore en cours du même workflow (`concurrency`).
+- Suivi : `gh run list` / `gh run watch`.
 
 ## Documentation
 
