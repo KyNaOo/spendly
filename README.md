@@ -107,6 +107,24 @@ cd api
 
 Santé : `GET http://localhost:8080/actuator/health` (public) → `{"status":"UP"}` ; `/actuator/info` exige une authentification.
 
+#### Sécurité (resource server JWT)
+
+L'API n'a ni session ni page de login : chaque requête porte un jeton d'accès Keycloak (`Authorization: Bearer …`), obtenu par le front via Authorization Code + PKCE.
+
+- **Validation du jeton** (Spring Boot, propriétés `spring.security.oauth2.resourceserver.jwt.*`) : signature vérifiée avec les clés publiques du realm (découvertes via `<issuer>/.well-known/openid-configuration` à la première requête authentifiée, Keycloak n'a pas besoin d'être démarré pour lancer l'API), expiration, émetteur (`issuer-uri`, par profil) et audience `spendly-api`. Jeton absent ou invalide → **401** avec l'en-tête `WWW-Authenticate: Bearer …`.
+- **Rôles** : `KeycloakRealmRoleConverter` transforme `realm_access.roles` en autorités `ROLE_EMPLOYEE`, `ROLE_MANAGER`… (utilisables par `hasRole('MANAGER')`). Le nom du principal est le `sub`.
+- **Règles HTTP** (`config/SecurityConfig`) : *stateless* (aucun cookie de session), CSRF désactivé (inutile sans cookie d'authentification), CORS limité à `spendly.frontend-url`, routes publiques `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**` ; tout le reste exige un jeton valide.
+- **Identité côté application** : le port `CurrentUser` (`application/port/out`) renvoie un `AuthenticatedUser` (id = `sub`, nom, rôles) ; seul l'adaptateur `adapter/out/security` lit le contexte Spring Security.
+- `GET /api/me` → `{"id": "<sub>", "name": "Marc Lefèvre", "roles": ["EMPLOYEE", "MANAGER"]}` (rôles applicatifs uniquement, triés).
+
+```bash
+# Essai manuel (Keycloak démarré) : récupérer un jeton via le front, ou réutiliser la fonction token_for
+# de infra/scripts/check-keycloak-realm.sh, puis :
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/me
+```
+
+- Tests : `jwt()` de `spring-security-test` pour les règles d'accès (`MeControllerTest`) ; `JwtValidationTest` envoie de vrais jetons signés à un faux realm (serveur HTTP du JDK publiant la découverte OIDC et les clés) pour vérifier signature, expiration, émetteur et audience sans Keycloak.
+
 #### Profils et configuration
 
 | Profil | Usage | Activation |
@@ -124,7 +142,8 @@ Santé : `GET http://localhost:8080/actuator/health` (public) → `{"status":"UP
 | `SPENDLY_DB_URL` | `jdbc:postgresql://localhost:5432/spendly` | obligatoire |
 | `SPENDLY_DB_USERNAME` | `spendly` | obligatoire |
 | `SPENDLY_DB_PASSWORD` | `spendly` | obligatoire |
-| `SPENDLY_FRONTEND_URL` | `http://localhost:4200` | obligatoire |
+| `SPENDLY_FRONTEND_URL` | `http://localhost:4200` | obligatoire (aussi l'origine CORS autorisée) |
+| `SPENDLY_OIDC_ISSUER_URI` | `http://localhost:8180/realms/spendly` | obligatoire (doit égaler le claim `iss` des jetons) |
 | `SPENDLY_BASE_CURRENCY` | `EUR` | optionnelle (`EUR`) |
 
 ### Front (`web/`)

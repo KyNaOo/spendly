@@ -5,6 +5,12 @@ spring:
     url: ${SPENDLY_DB_URL}
     username: ${SPENDLY_DB_USERNAME}
     password: ${SPENDLY_DB_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Must equal the "iss" claim of the tokens, i.e. the public URL of the Keycloak realm.
+          issuer-uri: ${SPENDLY_OIDC_ISSUER_URI}
 
 management:
   endpoint:

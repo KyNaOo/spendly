@@ -11,6 +11,14 @@ spring:
     hibernate:
       # The schema is owned by Flyway migrations only.
       ddl-auto: validate
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # The issuer (Keycloak realm URL) is defined per profile. Spring Boot fetches the signing
+          # keys from <issuer>/.well-known/openid-configuration on the first authenticated request,
+          # then checks the signature, the expiration, the "iss" claim and the audience below.
+          audiences: spendly-api
 
 management:
   endpoints:

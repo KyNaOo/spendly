@@ -2,3 +2,12 @@
 # The datasource is not configured here: Testcontainers (@ServiceConnection) provides it.
 spendly:
   frontend-url: http://localhost:4200
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Never contacted: tests build their tokens with spring-security-test's jwt(), or sign
+          # them with a local key (JwtValidationTest), so no Keycloak is needed.
+          issuer-uri: http://keycloak.test/realms/spendly

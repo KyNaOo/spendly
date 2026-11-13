@@ -36,7 +36,7 @@ gh issue view <n>                                # tâches, critères d'acceptat
 ## Structure cible (monorepo)
 
 ```
-api/     Spring Boot — com.spendly.{domain, application/port/{in,out}, application/service, adapter/{in/web, out/persistence, out/storage, out/messaging, out/pdf}, config}
+api/     Spring Boot — com.spendly.{domain, application/port/{in,out}, application/service, adapter/{in/web, out/persistence, out/storage, out/messaging, out/pdf, out/security}, config}
 web/     Angular — src/app/{core, shared, features/{home, reports, approvals, accounting, admin}} ; URL API via le jeton API_BASE_URL (src/environments)
 infra/   docker-compose.yml, keycloak/realm-export.json, helm/spendly/
 docs/    cahier des charges, ADR (docs/adr/)
@@ -66,7 +66,7 @@ gh run list --limit 5 && gh run watch                # CI GitHub Actions : .gith
 - **Machine à états** dans l'agrégat `ExpenseReport` :
   `DRAFT -submit-> SUBMITTED -approve-> APPROVED -pay-> REIMBURSED` ; `SUBMITTED -reject-> DRAFT` (motif obligatoire) ; `DRAFT|SUBMITTED -cancel-> CANCELLED`.
 - **Règles métier** : soumission impossible sans ligne ni justificatif au-dessus du seuil ; ligne hors plafond **signalée, pas bloquée** ; pas d'auto-validation ; seul **le manager de l'auteur** valide.
-- **Identité** : Keycloak ne porte que l'identité et les rôles realm (`realm_access.roles`, audience `spendly-api`) ; `managerId` et `department` vivent en base (table `employee`, clé = `sub`) — ADR 0003. Les comptes de démo ont des `sub` fixes (`00000000-0000-4000-8000-00000000000N`), à garder cohérents avec les données de démo.
+- **Identité** : Keycloak ne porte que l'identité et les rôles realm (`realm_access.roles` → `ROLE_*`, audience `spendly-api`, issuer par profil via `SPENDLY_OIDC_ISSUER_URI`) ; l'application lit l'utilisateur courant via le port `CurrentUser` (jamais `SecurityContextHolder` hors de `adapter/out/security`) ; `managerId` et `department` vivent en base (table `employee`, clé = `sub`) — ADR 0003. Les comptes de démo ont des `sub` fixes (`00000000-0000-4000-8000-00000000000N`), à garder cohérents avec les données de démo.
 - **Concurrence** : verrou optimiste `@Version` → HTTP 409.
 - **Erreurs API** : `ProblemDetail` (RFC 7807) via `@RestControllerAdvice`, erreurs de validation détaillées par champ.
 - **Événements** : écrits dans la table outbox dans la même transaction que l'agrégat, publiés ensuite ; consumers idempotents (clé `eventId`) + dead-letter topic.

@@ -76,6 +76,7 @@ class UnresolvedPlaceholdersCheckTest {
         .hasMessageContaining("SPENDLY_DB_USERNAME")
         .hasMessageContaining("SPENDLY_DB_PASSWORD")
         .hasMessageContaining("SPENDLY_FRONTEND_URL")
+        .hasMessageContaining("SPENDLY_OIDC_ISSUER_URI")
         .hasMessageContaining("application-prod.yml");
   }
 }

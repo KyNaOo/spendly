@@ -88,6 +88,11 @@ class SpendlyPropertiesTest {
               .isEqualTo(URI.create("http://localhost:4200"));
           assertThat(context.getEnvironment().getProperty("spring.datasource.url"))
               .isEqualTo("jdbc:postgresql://localhost:5432/spendly");
+          assertThat(
+                  context
+                      .getEnvironment()
+                      .getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
+              .isEqualTo("http://localhost:8180/realms/spendly");
         });
   }
 
@@ -112,13 +117,19 @@ class SpendlyPropertiesTest {
             "SPENDLY_BASE_CURRENCY=CHF",
             "SPENDLY_DB_URL=jdbc:postgresql://db:5432/spendly",
             "SPENDLY_DB_USERNAME=app",
-            "SPENDLY_DB_PASSWORD=from-secret")
+            "SPENDLY_DB_PASSWORD=from-secret",
+            "SPENDLY_OIDC_ISSUER_URI=https://sso.example.com/realms/spendly")
         .run(context -> {
           SpendlyProperties properties = context.getBean(SpendlyProperties.class);
           assertThat(properties.frontendUrl()).isEqualTo(URI.create("https://spendly.example.com"));
           assertThat(properties.baseCurrency()).isEqualTo(Currency.getInstance("CHF"));
           assertThat(context.getEnvironment().getProperty("spring.datasource.password"))
               .isEqualTo("from-secret");
+          assertThat(
+                  context
+                      .getEnvironment()
+                      .getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
+              .isEqualTo("https://sso.example.com/realms/spendly");
         });
   }
 }

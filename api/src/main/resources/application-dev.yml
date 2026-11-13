@@ -5,6 +5,12 @@ spring:
     url: ${SPENDLY_DB_URL:jdbc:postgresql://localhost:5432/spendly}
     username: ${SPENDLY_DB_USERNAME:spendly}
     password: ${SPENDLY_DB_PASSWORD:spendly}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Realm "spendly" of the Keycloak started by infra/docker-compose.yml.
+          issuer-uri: ${SPENDLY_OIDC_ISSUER_URI:http://localhost:8180/realms/spendly}
 
 management:
   endpoint:
