@@ -1,10 +1,12 @@
 package com.spendly.config;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -12,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 /**
  * HTTP security: the API is an OAuth2 <em>resource server</em> that accepts only JWT access tokens
@@ -21,8 +24,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * {@code spendly-api}) is configured by Spring Boot from the {@code
  * spring.security.oauth2.resourceserver.jwt.*} properties (issuer per profile, audience in {@code
  * application.yml}).
+ *
+ * <p>Authorization is two-level (ADR 0004): the filter chain only requires a valid token, then
+ * {@code @EnableMethodSecurity} activates {@code @PreAuthorize} on the application services (role
+ * checks), and the fine-grained rules (owner, manager of the author) are checked by the domain
+ * ({@code AccessPolicy}). Every refusal is answered with a 403 {@code ProblemDetail}.
  */
 @Configuration(proxyBeanMethods = false)
+@EnableMethodSecurity
 public class SecurityConfig {
 
   /** Routes reachable without a token: health probe and API documentation. */
@@ -36,7 +45,10 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(
-      HttpSecurity http, JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
+      HttpSecurity http,
+      JwtAuthenticationConverter jwtAuthenticationConverter,
+      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver)
+      throws Exception {
     http
         // No server-side session: every request carries its token (no JSESSIONID cookie).
         .sessionManagement(
@@ -49,8 +61,12 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth -> auth.requestMatchers(PUBLIC_ROUTES).permitAll().anyRequest().authenticated())
         // Missing/invalid token -> 401 with a WWW-Authenticate: Bearer header.
-        .oauth2ResourceServer(oauth2 ->
-            oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+        .oauth2ResourceServer(
+            oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
+        // Authenticated but not allowed -> 403 ProblemDetail (same body as @PreAuthorize refusals).
+        .exceptionHandling(exceptions ->
+            exceptions.accessDeniedHandler(
+                new ProblemDetailAccessDeniedHandler(exceptionResolver)));
     return http.build();
   }
 

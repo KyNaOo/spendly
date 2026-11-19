@@ -115,6 +115,7 @@ L'API n'a ni session ni page de login : chaque requête porte un jeton d'accès 
 - **Rôles** : `KeycloakRealmRoleConverter` transforme `realm_access.roles` en autorités `ROLE_EMPLOYEE`, `ROLE_MANAGER`… (utilisables par `hasRole('MANAGER')`). Le nom du principal est le `sub`.
 - **Règles HTTP** (`config/SecurityConfig`) : *stateless* (aucun cookie de session), CSRF désactivé (inutile sans cookie d'authentification), CORS limité à `spendly.frontend-url`, routes publiques `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**` ; tout le reste exige un jeton valide.
 - **Identité côté application** : le port `CurrentUser` (`application/port/out`) renvoie un `AuthenticatedUser` (id = `sub`, nom, rôles) ; seul l'adaptateur `adapter/out/security` lit le contexte Spring Security.
+- **Autorisations** (ADR 0004) : `@EnableMethodSecurity` ; chaque service applicatif déclare son rôle requis avec `@PreAuthorize("hasRole('MANAGER')")` ; les règles fines (« seul l'auteur », « seul le manager de l'auteur ») sont des fonctions pures du domaine (`domain/identity/AccessPolicy`) appelées par le service après chargement de la note. Tout refus → **403** au format `ProblemDetail` (`application/problem+json`, champ `reason` pour une règle fine : `NOT_OWNER`, `NOT_MANAGER_OF_AUTHOR`).
 - `GET /api/me` → `{"id": "<sub>", "name": "Marc Lefèvre", "roles": ["EMPLOYEE", "MANAGER"]}` (rôles applicatifs uniquement, triés).
 
 ```bash
@@ -123,7 +124,7 @@ L'API n'a ni session ni page de login : chaque requête porte un jeton d'accès 
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/me
 ```
 
-- Tests : `jwt()` de `spring-security-test` pour les règles d'accès (`MeControllerTest`) ; `JwtValidationTest` envoie de vrais jetons signés à un faux realm (serveur HTTP du JDK publiant la découverte OIDC et les clés) pour vérifier signature, expiration, émetteur et audience sans Keycloak.
+- Tests : `jwt()` de `spring-security-test` pour les règles d'accès (`MeControllerTest`, `MethodSecurityTest` : employé sur un endpoint manager, manager hors équipe → 403) ; `JwtValidationTest` envoie de vrais jetons signés à un faux realm (serveur HTTP du JDK publiant la découverte OIDC et les clés) pour vérifier signature, expiration, émetteur et audience sans Keycloak.
 
 #### Profils et configuration
 

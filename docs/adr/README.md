@@ -7,6 +7,7 @@ Chaque décision structurante est consignée dans un fichier `NNNN-titre-court.m
 | [0001](0001-monorepo.md) | Monorepo api / web / infra | Accepté |
 | [0002](0002-minio-image-source.md) | Source des images MinIO (Chainguard, épinglées par digest) | Accepté |
 | [0003](0003-identity-and-manager-relationship.md) | Identité Keycloak et relation manager côté base de données | Accepté |
+| [0004](0004-authorization-roles-and-domain-rules.md) | Autorisations : rôles par `@PreAuthorize`, règles fines dans le domaine | Accepté |
 
 ## Modèle
 
