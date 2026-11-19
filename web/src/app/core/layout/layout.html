@@ -7,7 +7,7 @@
     [attr.role]="isHandset() ? 'dialog' : 'navigation'"
   >
     <mat-nav-list aria-label="Navigation principale">
-      @for (item of navItems; track item.path) {
+      @for (item of navItems(); track item.path) {
         <a
           mat-list-item
           [routerLink]="item.path"
@@ -37,6 +37,19 @@
         </button>
       }
       <a class="layout__brand" routerLink="/">Spendly</a>
+      <span class="layout__spacer"></span>
+      @if (user(); as user) {
+        <span class="layout__user" data-testid="current-user">{{ user.name }}</span>
+        <button mat-button type="button" (click)="logout()">
+          <mat-icon aria-hidden="true">logout</mat-icon>
+          Se déconnecter
+        </button>
+      } @else {
+        <button mat-button type="button" (click)="login()">
+          <mat-icon aria-hidden="true">login</mat-icon>
+          Se connecter
+        </button>
+      }
     </mat-toolbar>
 
     <main class="layout__main">

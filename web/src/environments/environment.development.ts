@@ -5,4 +5,10 @@
 export const environment = {
   production: false,
   apiUrl: '/api',
+  oidc: {
+    /** Keycloak realm started by infra/docker-compose.yml (must equal the `iss` claim). */
+    authority: 'http://localhost:8180/realms/spendly',
+    /** Public client declared in infra/keycloak/realm-export.json (Code + PKCE S256). */
+    clientId: 'spendly-web',
+  },
 };

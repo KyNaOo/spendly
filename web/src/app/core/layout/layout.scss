@@ -20,6 +20,19 @@
   font: var(--mat-sys-title-large);
 }
 
+.layout__spacer {
+  flex: 1 1 auto;
+}
+
+.layout__user {
+  font: var(--mat-sys-body-large);
+  margin-right: 8px;
+}
+
+.layout__toolbar .mat-mdc-button {
+  color: inherit;
+}
+
 .layout__main {
   padding: 24px;
 }

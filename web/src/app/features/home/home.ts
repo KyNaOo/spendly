@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 
 @Component({
@@ -18,9 +19,17 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
         Déclarez vos dépenses, faites-les valider par votre manager et suivez leur remboursement.
       </mat-card-content>
       <mat-card-actions>
-        <a mat-flat-button routerLink="/reports">Mes notes de frais</a>
+        @if (!auth.isAuthenticated()) {
+          <button mat-flat-button type="button" (click)="auth.login('/')">
+            Se connecter avec Keycloak
+          </button>
+        } @else if (auth.hasAnyRole(['EMPLOYEE'])) {
+          <a mat-flat-button routerLink="/reports">Mes notes de frais</a>
+        }
       </mat-card-actions>
     </mat-card>
   `,
 })
-export class Home {}
+export class Home {
+  protected readonly auth = inject(AuthService);
+}

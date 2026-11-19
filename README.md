@@ -163,6 +163,10 @@ npm run build         # build de production (dist/web/)
 - Angular 22 (standalone, signals, zoneless), Angular Material 3 (thème `azure`/`blue` dans `src/styles.scss`).
 - Arborescence `core/` (layout, configuration), `shared/` (composants réutilisables), `features/{reports,approvals,accounting,admin}` chargées à la demande (*lazy loading*). Détails dans [`web/README.md`](web/README.md).
 - L'URL de l'API vient de `src/environments/` (`apiUrl: '/api'`) : en développement, le proxy `web/proxy.conf.json` évite tout problème de CORS.
+- **Authentification** (`core/auth/`, librairie `angular-auth-oidc-client`) : flux **Authorization Code + PKCE** (S256) contre le realm `spendly` (client public `spendly-web`, `oidc.authority` dans `src/environments/`). Au clic sur « Se connecter », le front génère un `code_verifier` aléatoire et n'envoie à Keycloak que son empreinte (`code_challenge`) ; au retour, il échange le `code` contre les jetons en prouvant qu'il détient le `code_verifier` : un code intercepté est inutilisable. Jetons en `sessionStorage`, jeton d'accès (5 min) renouvelé 30 s avant expiration par le *refresh token* ; logout = déconnexion Keycloak (RP-initiated logout) puis retour à l'accueil.
+- `AuthService` expose `isAuthenticated`, `user` et `roles` (claim `realm_access.roles` du jeton d'accès) sous forme de **signals** ; l'intercepteur fonctionnel `authInterceptor` ajoute `Authorization: Bearer …` **uniquement** aux URL de l'API (`API_BASE_URL`), jamais à un autre domaine.
+- Guards fonctionnels : `authGuard` (lance le login puis revient sur l'URL demandée) et `roleGuard(['MANAGER'])` (sinon page `/forbidden`). Menu : Mes notes de frais → `EMPLOYEE`, Validations → `MANAGER`, Comptabilité → `ACCOUNTANT`, Administration → `ADMIN`. Ces contrôles ne sont qu'un confort d'interface : l'API revérifie chaque rôle (`@PreAuthorize`).
+- Essai manuel : `docker compose -f infra/docker-compose.yml up -d keycloak`, `cd web && npm start`, ouvrir http://localhost:4200/approvals, se connecter avec `alice`/`alice` (→ page « Accès refusé ») puis `marc`/`marc` (→ Validations).
 
 ## Intégration continue
 

@@ -53,7 +53,7 @@ cd api && ./mvnw spring-boot:test-run                # sans BDD locale : Postgre
 cd api && ./mvnw verify                              # tests (Docker requis : Testcontainers) + Spotless/Checkstyle + ArchUnit
 cd api && ./mvnw spotless:apply                      # reformater le code Java (google-java-format)
 cd api && ./mvnw test -Dtest=ClassName               # un seul test
-cd web && npm start                                  # http://localhost:4200 (proxy /api et /actuator vers :8080, web/proxy.conf.json)
+cd web && npm start                                  # http://localhost:4200 (proxy /api et /actuator vers :8080, web/proxy.conf.json) ; login Keycloak :8180 (alice, marc… mot de passe = identifiant)
 cd web && npm run lint && npm test && npm run build   # lint = ESLint + prettier --check ; test = Vitest une passe (test:watch en continu)
 cd web && npm run format                             # reformater le front (Prettier)
 gh run list --limit 5 && gh run watch                # CI GitHub Actions : .github/workflows/{api,web}.yml, push sur main filtré par paths
@@ -66,7 +66,7 @@ gh run list --limit 5 && gh run watch                # CI GitHub Actions : .gith
 - **Machine à états** dans l'agrégat `ExpenseReport` :
   `DRAFT -submit-> SUBMITTED -approve-> APPROVED -pay-> REIMBURSED` ; `SUBMITTED -reject-> DRAFT` (motif obligatoire) ; `DRAFT|SUBMITTED -cancel-> CANCELLED`.
 - **Règles métier** : soumission impossible sans ligne ni justificatif au-dessus du seuil ; ligne hors plafond **signalée, pas bloquée** ; pas d'auto-validation ; seul **le manager de l'auteur** valide.
-- **Identité** : Keycloak ne porte que l'identité et les rôles realm (`realm_access.roles` → `ROLE_*`, audience `spendly-api`, issuer par profil via `SPENDLY_OIDC_ISSUER_URI`) ; l'application lit l'utilisateur courant via le port `CurrentUser` (jamais `SecurityContextHolder` hors de `adapter/out/security`) ; `managerId` et `department` vivent en base (table `employee`, clé = `sub`) — ADR 0003. Les comptes de démo ont des `sub` fixes (`00000000-0000-4000-8000-00000000000N`), à garder cohérents avec les données de démo.
+- **Identité** : Keycloak ne porte que l'identité et les rôles realm (`realm_access.roles` → `ROLE_*`, audience `spendly-api`, issuer par profil via `SPENDLY_OIDC_ISSUER_URI`) ; l'application lit l'utilisateur courant via le port `CurrentUser` (jamais `SecurityContextHolder` hors de `adapter/out/security`) ; `managerId` et `department` vivent en base (table `employee`, clé = `sub`) — ADR 0003. Côté front, l'utilisateur et ses rôles se lisent via `AuthService` (signals, `web/src/app/core/auth/`), jamais directement via `OidcSecurityService` ; tests avec `FakeAuthService` (`web/src/testing/`). Les comptes de démo ont des `sub` fixes (`00000000-0000-4000-8000-00000000000N`), à garder cohérents avec les données de démo.
 - **Autorisations** (ADR 0004) : rôle requis par `@PreAuthorize` sur chaque méthode de service applicatif (`@EnableMethodSecurity`) ; règles fines (propriétaire, manager de l'auteur) dans le domaine via `domain/identity/AccessPolicy` → `ForbiddenAccessException` ; tout refus → 403 `ProblemDetail`.
 - **Concurrence** : verrou optimiste `@Version` → HTTP 409.
 - **Erreurs API** : `ProblemDetail` (RFC 7807) via `@RestControllerAdvice`, erreurs de validation détaillées par champ.
